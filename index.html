@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artify × The Met - Customize Museum Art</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- classic serif font -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --met-primary: #D94F2B;      /* Met coral red for CTAs */
+            --met-dark: #231F20;         /* Met dark gray for text */
+            --met-bg: #FFFFFF;           /* Met white background */
+            --met-accent: #98765C;       /* Met warm gray for accents */
+            --met-light-gray: #F2F2F2;   /* Met light gray for backgrounds */
+            --met-medium-gray: #767676;  /* Met medium gray for secondary text */
+            --met-border: #DDDDDD;       /* Met border color */
+            
+            --serif: 'Playfair Display', serif;
+            --body-font: 'Libre Baskerville', serif;
+            
+            --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--body-font);
+            line-height: 1.6;
+            color: var(--met-dark);
+            background-color: var(--met-light);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-family: var(--serif);
+            font-style: italic;
+            color: var(--met-gray);
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+        }
+
+        .error, .no-results {
+            text-align: center;
+            padding: 2rem;
+            font-family: var(--serif);
+            font-style: italic;
+            color: var(--met-gray);
+            background: white;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 4px;
+        }
+
+        .header {
+            background: var(--met-dark);
+            color: white;
+            padding: 3rem 5%;
+            text-align: center;
+            border-bottom: 3px solid var(--met-gold);
+        }
+
+        .header h1 {
+            font-family: var(--serif);
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-family: var(--body-font);
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-style: italic;
+            color: var(--met-gold);
+        }
+
+        /* main Content */
+        .container {
+            max-width: 1400px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 7fr 3fr;
+            gap: 3rem;
+        }
+
+        /* search box */
+        .search-container {
+            background: white;
+            padding: 2rem;
+            border: 1px solid rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: 1px solid #ddd;
+            font-family: var(--body-font);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            border-color: var(--met-gold);
+            outline: none;
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1.5rem;
+            border: 1px solid var(--met-gray);
+            background: transparent;
+            color: var(--met-gray);
+            font-family: var(--body-font);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-btn:hover {
+            background: var(--met-gold);
+            border-color: var(--met-gold);
+            color: white;
+        }
+
+        .filter-btn.active {
+            background: var(--met-dark);
+            border-color: var(--met-dark);
+            color: white;
+        }
+
+        /* artwork display grid */
+        .artwork-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .artwork-card {
+            background: white;
+            border: 1px solid rgba(0,0,0,0.1);
+            overflow: hidden;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .artwork-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow);
+        }
+
+        .artwork-card.selected {
+            border: 2px solid var(--met-gold);
+        }
+
+        .artwork-image {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .artwork-card:hover .artwork-image {
+            transform: scale(1.03);
+        }
+
+        .artwork-info {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .artwork-info h3 {
+            font-family: var(--serif);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--met-dark);
+        }
+
+        .artwork-info p {
+            color: var(--met-gray);
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .artwork-info .date {
+            font-style: italic;
+            font-size: 0.85rem;
+        }
+
+        /* customize product area */
+        .customization-panel {
+            background: white;
+            padding: 2rem;
+            border: 1px solid rgba(0,0,0,0.1);
+            position: sticky;
+            top: 2rem;
+        }
+
+        .panel-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--met-gold);
+        }
+
+        .panel-header h2 {
+            font-family: var(--serif);
+            color: var(--met-dark);
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .panel-header p {
+            color: var(--met-gray);
+            font-style: italic;
+        }
+
+        .product-options {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .product-option {
+            padding: 1.5rem;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .product-option:hover {
+            border-color: var(--met-gold);
+        }
+
+        .product-option.selected {
+            border-color: var(--met-dark);
+            background: rgba(26, 26, 26, 0.02);
+        }
+
+        .product-icon {
+            font-size: 1.5rem;
+            color: var(--met-gold);
+        }
+
+        .product-option h3 {
+            font-family: var(--serif);
+            margin-bottom: 0.3rem;
+        }
+
+        .product-option p {
+            color: var(--met-gray);
+            font-size: 0.9rem;
+        }
+
+        .preview-container {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 300px;
+            object-fit: contain;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: var(--met-light);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .price {
+            font-family: var(--serif);
+            font-size: 2rem;
+            color: var(--met-dark);
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .add-to-cart-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--met-dark);
+            color: white;
+            border: none;
+            font-family: var(--body-font);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .add-to-cart-btn:hover {
+            background: var(--met-gold);
+        }
+
+        .add-to-cart-btn:disabled {
+            background: var(--met-gray);
+            cursor: not-allowed;
+        }
+
+        /* responsive elements */
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .customization-panel {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .container {
+                padding: 0 1rem;
+                margin: 1.5rem auto;
+            }
+
+            .artwork-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            .product-option {
+                flex-direction: column;
+                text-align: center;
+                padding: 1rem;
+            }
+
+            .artwork-image {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Artify</h1>
+        <p>Transform timeless masterpieces into everyday treasures</p>
+    </header>
+
+    <main class="container">
+        <section class="gallery-section">
+            <div class="search-container">
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search for artworks, artists, or periods...">
+                </div>
+                <div class="filter-container">
+                    <button class="filter-btn" data-department="11">Paintings</button>
+                    <button class="filter-btn" data-department="5">Asian Art</button>
+                    <button class="filter-btn" data-department="21">Modern Art</button>
+                    <button class="filter-btn" data-department="6">European Art</button>
+                    <button class="filter-btn" data-department="10">Photography</button>
+                </div>
+            </div>
+
+            <div class="artwork-grid" id="artworkGrid">
+            </div>
+        </section>
+
+        <section class="customization-panel">
+            <div class="panel-header">
+                <h2>Customize Your Product</h2>
+                <p>1. Select an artwork and 2. choose your product</p>
+            </div>
+
+            <div class="product-options">
+                <div class="product-option" data-product="print">
+                    <i class="fas fa-image product-icon"></i>
+                    <div>
+                        <h3>Art Print</h3>
+                        <p>Premium quality print on archival paper</p>
+                        <p class="price">From $29.99</p>
+                    </div>
+                </div>
+                <div class="product-option" data-product="mug">
+                    <i class="fas fa-mug-hot product-icon"></i>
+                    <div>
+                        <h3>Coffee Mug</h3>
+                        <p>Ceramic mug with artwork wrap</p>
+                        <p class="price">From $19.99</p>
+                    </div>
+                </div>
+                <div class="product-option" data-product="pillow">
+                    <i class="fas fa-couch product-icon"></i>
+                    <div>
+                        <h3>Throw Pillow</h3>
+                        <p>Soft, durable fabric with artwork print</p>
+                        <p class="price">From $39.99</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="preview-container" id="previewContainer">
+                <p>Select an artwork and product to preview</p>
+            </div>
+
+            <button class="add-to-cart-btn" id="addToCartBtn" disabled>
+                Add to Cart
+            </button>
+        </section>
+    </main>
+
+    <script>
+        // the met API endpoint
+        const MET_API_BASE = 'https://collectionapi.metmuseum.org/public/collection/v1/';
+
+        // landing page selection
+        const FEATURED_ARTWORK_IDS = [
+            436535,  // water lilies, monet
+            459123,  // wheat field with cypresses, van gogh
+            438814,  // the death of socrates, jacques louis david
+            437853,  // washington crossing the delaware, emanuel leutze
+            436947,  // the persistence of memory, salvador dali
+            435882,  // madame x, john singer sargent 
+            437984,  // bridge over a pond of water lilies, monet
+            436529,  // the dance class, degas
+            437133,  // young woman with a water pitcher, vermeer
+            436965,  // self-portrait with a straw hat, van gogh
+            436944,  // the cards players, cezanne
+            459088   // irises, van gogh
+        ];
+
+        // shuffle
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // fetch landing page selection 
+        async function fetchInitialArtworks() {
+            try {
+                const grid = document.getElementById('artworkGrid');
+                grid.innerHTML = '<div class="loading">loading curated collection...</div>';
+
+                // shuffle and take 10
+                const selectedIds = shuffleArray([...FEATURED_ARTWORK_IDS]).slice(0, 10);
+                
+                // fetch data in parallel
+                const artworks = await Promise.all(
+                    selectedIds.map(id => fetchArtworkDetails(id))
+                );
+
+                const validArtworks = artworks.filter(artwork => artwork !== null);
+
+                if (validArtworks.length === 0) {
+                    grid.innerHTML = '<div class="error">unable to load curated collection. please try again.</div>';
+                    return;
+                }
+
+                renderArtworks(validArtworks);
+
+            } catch (error) {
+                console.error('error fetching curated artworks:', error);
+                document.getElementById('artworkGrid').innerHTML = 
+                    '<div class="error">error loading artworks. please try again.</div>';
+            }
+        }
+
+        // initalize with landing page selection 
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchInitialArtworks(); 
+            setupEventListeners();
+        });
+
+        let selectedArtwork = null;
+        let selectedProduct = null;
+
+        // valid date artwork data has image (necessary for print preview)
+        function isValidArtwork(artwork) {
+            return artwork 
+                && artwork.primaryImage  // has image
+                && artwork.primaryImage.startsWith('http')  // image URL is valid
+                && artwork.title  // has title
+                && artwork.objectID  // has ID
+                && artwork.isPublicDomain;  // has commercial use license 
+        }
+
+        // fetch an artwork data object 
+        async function fetchArtworkDetails(id) {
+            try {
+                const response = await fetch(`${MET_API_BASE}objects/${id}`);
+                const artwork = await response.json();
+                return isValidArtwork(artwork) ? artwork : null;
+            } catch (error) {
+                console.error(`Error fetching artwork ${id}:`, error);
+                return null;
+            }
+        }
+
+        // fetch random artworks from The Met API
+        async function fetchArtworks(departmentId = null) {
+            try {
+                // show loading state
+                const grid = document.getElementById('artworkGrid');
+                grid.innerHTML = '<div class="loading">Loading artwork collection</div>';
+
+                // build search query
+                let query = `${MET_API_BASE}search?hasImages=true&q=artwork`;
+                if (departmentId) {
+                    query += `&departmentIds=${departmentId}`;
+                }
+                
+                const searchResponse = await fetch(query);
+                const searchData = await searchResponse.json();
+                
+                if (!searchData.objectIDs || searchData.objectIDs.length === 0) {
+                    grid.innerHTML = '<div class="no-results">No artworks found in this category.</div>';
+                    return;
+                }
+
+                // shuffle and take more IDs than needed since some might be invalid
+                const selectedIds = searchData.objectIDs
+                    .sort(() => 0.5 - Math.random())
+                    .slice(0, 30); // start with 30 for a batch; change if needed 
+
+                // fetch and validate artwork details in parallel
+                const artworkPromises = selectedIds.map(id => fetchArtworkDetails(id));
+                const artworks = await Promise.all(artworkPromises);
+
+                // filter out null results and take first 9 valid artworks
+                const validArtworks = artworks
+                    .filter(artwork => artwork !== null)
+                    .slice(0, 9);
+
+                if (validArtworks.length === 0) {
+                    grid.innerHTML = '<div class="error">No suitable artworks found. Please try again.</div>';
+                    return;
+                }
+
+                renderArtworks(validArtworks);
+
+            } catch (error) {
+                console.error('Error fetching artworks:', error);
+                document.getElementById('artworkGrid').innerHTML = 
+                    '<div class="error">Error loading artworks. Please try again later.</div>';
+            }
+        }
+
+        // display artwork cards
+        function renderArtworks(artworks) {
+            const grid = document.getElementById('artworkGrid');
+            grid.innerHTML = artworks.map(artwork => `
+                <div class="artwork-card" data-id="${artwork.objectID}">
+                    <img src="${artwork.primaryImage}" 
+                         alt="${artwork.title}" 
+                         class="artwork-image"
+                         onerror="this.parentElement.style.display='none'">
+                    <div class="artwork-info">
+                        <h3>${artwork.title}</h3>
+                        <p>${artwork.artistDisplayName || 'Unknown Artist'}</p>
+                        <p class="date">${artwork.objectDate || artwork.period || ''}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // handle search with department filtering
+        async function handleSearch(searchTerm, department = null) {
+            try {
+                const grid = document.getElementById('artworkGrid');
+                grid.innerHTML = '<div class="loading">Searching artworks</div>';
+
+                let query = `${MET_API_BASE}search?hasImages=true&q=${encodeURIComponent(searchTerm)}`;
+                if (department) {
+                    query += `&departmentId=${department}`;
+                }
+                
+                const response = await fetch(query);
+                const data = await response.json();
+                
+                if (!data.objectIDs || data.objectIDs.length === 0) {
+                    grid.innerHTML = '<div class="no-results">No artworks found matching your search.</div>';
+                    return;
+                }
+
+                // get details for first 30 items  
+                const artworkPromises = data.objectIDs
+                    .slice(0, 30)
+                    .map(id => fetchArtworkDetails(id));
+
+                const artworks = await Promise.all(artworkPromises);
+                const validArtworks = artworks
+                    .filter(artwork => artwork !== null)
+                    .slice(0, 9);
+
+                if (validArtworks.length === 0) {
+                    grid.innerHTML = '<div class="no-results">No suitable artworks found matching your search.</div>';
+                    return;
+                }
+
+                renderArtworks(validArtworks);
+
+            } catch (error) {
+                console.error('Search error:', error);
+                grid.innerHTML = '<div class="error">Error performing search. Please try again.</div>';
+            }
+        }
+
+        // debounce for search
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // event listeners
+        function setupEventListeners() {
+            // artwork selection
+            document.getElementById('artworkGrid').addEventListener('click', (e) => {
+                const card = e.target.closest('.artwork-card');
+                if (card) {
+                    document.querySelectorAll('.artwork-card').forEach(c => {
+                        c.classList.remove('selected');
+                        c.style.transform = 'scale(1)';
+                    });
+                    card.classList.add('selected');
+                    card.style.transform = 'scale(1.02)';
+                    selectedArtwork = card.querySelector('img').src;
+                    updatePreview();
+                }
+            });
+
+            // product selection
+            document.querySelectorAll('.product-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    document.querySelectorAll('.product-option').forEach(o => 
+                        o.classList.remove('selected'));
+                    option.classList.add('selected');
+                    selectedProduct = option.dataset.product;
+                    updatePreview();
+                });
+            });
+
+            // department filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => 
+                        b.classList.remove('active'));
+                    btn.classList.add('active');
+                    fetchArtworks(btn.dataset.department);
+                });
+            });
+
+            // search with debouncing
+            const debouncedSearch = debounce((searchTerm) => {
+                const activeFilter = document.querySelector('.filter-btn.active');
+                handleSearch(searchTerm, activeFilter?.dataset.department);
+            }, 500);
+
+            document.querySelector('.search-input').addEventListener('input', (e) => {
+                const searchTerm = e.target.value.trim();
+                if (searchTerm.length >= 2) {
+                    debouncedSearch(searchTerm);
+                } else if (searchTerm.length === 0) {
+                    const activeFilter = document.querySelector('.filter-btn.active');
+                    fetchArtworks(activeFilter?.dataset.department);
+                }
+            });
+        }
+
+        // update preview
+        function updatePreview() {
+            const previewContainer = document.getElementById('previewContainer');
+            const addToCartBtn = document.getElementById('addToCartBtn');
+
+            if (selectedArtwork && selectedProduct) {
+                previewContainer.innerHTML = `
+                    <img src="${selectedArtwork}" alt="Preview" class="preview-image">
+                    <p>Preview of your ${selectedProduct} with selected artwork</p>
+                `;
+                addToCartBtn.disabled = false;
+            }
+        }
+
+        // initialize 
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchArtworks();
+            setupEventListeners();
+        });
+    </script>
+</body>
+</html>
