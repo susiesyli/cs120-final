@@ -1,5 +1,8 @@
 # cs120-final
 
+## To launch website: 
+https://susiesyli.github.io/cs120-final/index.html
+
 ## Project requirements 
 - [ ]  Use HTML/CSS/Javascript and optionally jQuery
 - [ ]  Must use a database(SQL or NoSQL)
