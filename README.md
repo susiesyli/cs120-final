@@ -20,9 +20,9 @@ https://susiesyli.github.io/cs120-final/index.html
 - [ ] how much funding your business needs and how it will be used
 - [ ] the estimated financial potential for your product and ROI (Return on Investment)
 
-### Notes 
+## Notes / To-dos
 ##### front end: 
-- add featured collection section in landing page 
+- [ ] add featured collection section in landing page 
 
 
 ##### back end: 
