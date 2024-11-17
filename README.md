@@ -28,3 +28,7 @@ https://susiesyli.github.io/cs120-final/index.html
 ##### back end: 
 
 ##### database: 
+
+
+## References
+* [Met Open Access Initiative (CC0)](https://github.com/metmuseum/openaccess)
