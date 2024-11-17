@@ -22,7 +22,7 @@ CREATE TABLE orders(
     ordered INT NOT NULL,
     customerid INT NOT NULL,
     productid INT NOT NULL,
-    artworkid VARCHAR(255) NOT NULL
+    artworkid VARCHAR(255) NOT NULL --This can map to "Object Number" in the MetObjects database 
     quantity INT NOT NULL,
     total_price NUMERIC(8,2),
     order_date DATETIME NOT NULL,
