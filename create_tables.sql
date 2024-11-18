@@ -2,6 +2,7 @@ CREATE TABLE products (
     productid INT NOT NULL,
     name VARCHAR(50) NOT NULL,
     price NUMERIC(8,2) NOT NULL,
+    image_link VARCHAR(255) NOT NULL,
     PRIMARY KEY(productid)
 );
 
@@ -26,6 +27,7 @@ CREATE TABLE orders(
     quantity INT NOT NULL,
     total_price NUMERIC(8,2),
     order_date DATETIME NOT NULL,
+    status VARCHAR(50),
     PRIMARY KEY(oderid),
     FOREIGN KEY(customerid) REFERENCES customers(customerid),
     FOREIGN KEY(productid) REFERENCES products(productid)
