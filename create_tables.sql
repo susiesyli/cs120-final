@@ -20,7 +20,7 @@ CREATE TABLE customers (
 );
 
 CREATE TABLE orders(
-    ordered INT NOT NULL,
+    orderid INT NOT NULL,
     customerid INT NOT NULL,
     productid INT NOT NULL,
     artworkid VARCHAR(255) NOT NULL --This can map to "Object Number" in the MetObjects database 
@@ -28,7 +28,7 @@ CREATE TABLE orders(
     total_price NUMERIC(8,2),
     order_date DATETIME NOT NULL,
     status VARCHAR(50),
-    PRIMARY KEY(oderid),
+    PRIMARY KEY(orderid),
     FOREIGN KEY(customerid) REFERENCES customers(customerid),
     FOREIGN KEY(productid) REFERENCES products(productid)
 );
