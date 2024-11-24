@@ -1,6 +1,7 @@
 CREATE TABLE products (
     productid INT NOT NULL,
     name VARCHAR(50) NOT NULL,
+    description VARCHAR(255),
     price NUMERIC(8,2) NOT NULL,
     image_link VARCHAR(255) NOT NULL,
     PRIMARY KEY(productid)
