@@ -1,9 +1,7 @@
 # cs120-final
 
 ## To launch website: 
-// repo is currently **private**, so the link below doesn't work yet (launch locally instead)
-
-https://susiesyli.github.io/cs120-final/index.html
+[website](https://susiesyli.github.io/cs120-final/index.html)
 
 ## Project requirements 
 - [ ]  Use HTML/CSS/Javascript and optionally jQuery
