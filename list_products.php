@@ -6,13 +6,15 @@
             $userid = "u3fi6z83zcg2y";
             $pw = "artify1234";
             $db = "dbgylh79jpnkih";
-            $conn = new mysqli($server, $userid, $pw);
-            $conn->select_db($db);
         ?>
     </head>
     <body>
         <div class="product-options">
         <?php
+            $conn = new mysqli($server, $userid, $pw);
+
+            $conn->select_db($db);
+
             $result = $conn->query("SELECT * FROM products;");
 
             while ($row = $result->fetch_assoc()) {
