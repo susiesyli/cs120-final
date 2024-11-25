@@ -19,8 +19,9 @@
 
             while ($row = $result->fetch_assoc()) {
                 printf(
-                    '<div class="product-options" data-product="%s"><img class="product-image" src="%s"><div><h3>%s</h3><p>%s</p><p class="price">From $%s</p></div>',
+                    '<div class="product-options" data-product="%s" product-id="%s"><img class="product-image" src="%s"><div><h3>%s</h3><p>%s</p><p class="price">From $%s</p></div>',
                     $row['name'],
+                    $row['productid'],
                     $row['image_link'],
                     $row['name'],
                     $row['description'],
