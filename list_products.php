@@ -2,7 +2,7 @@
 <html>
     <head>
         <?php
-            $server = "localhost";
+            $server = "carterb1.sgedu.site";
             $userid = "u3fi6z83zcg2y";
             $pw = "artify1234";
             $db = "dbgylh79jpnkih";
