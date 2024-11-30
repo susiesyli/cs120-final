@@ -367,6 +367,12 @@
             }
         }
     </style>
+    <?php
+        $server = "carterb1.sgedu.site";
+        $userid = "u3fi6z83zcg2y";
+        $pw = "artify1234";
+        $db = "dbgylh79jpnkih";
+    ?>
 </head>
 <body>
     <header class="header">
@@ -403,30 +409,23 @@
             </div>
 
             <div class="product-options">
-                <div class="product-option" data-product="print">
-                    <i class="fas fa-image product-icon"></i>
-                    <div>
-                        <h3>Art Print</h3>
-                        <p>Premium quality print on archival paper</p>
-                        <p class="price">From $29.99</p>
-                    </div>
-                </div>
-                <div class="product-option" data-product="mug">
-                    <i class="fas fa-mug-hot product-icon"></i>
-                    <div>
-                        <h3>Coffee Mug</h3>
-                        <p>Ceramic mug with artwork wrap</p>
-                        <p class="price">From $19.99</p>
-                    </div>
-                </div>
-                <div class="product-option" data-product="pillow">
-                    <i class="fas fa-couch product-icon"></i>
-                    <div>
-                        <h3>Throw Pillow</h3>
-                        <p>Soft, durable fabric with artwork print</p>
-                        <p class="price">From $39.99</p>
-                    </div>
-                </div>
+                <?php
+                    $conn = new mysqli($server, $userid, $pw);
+                    $conn->select_db($db);
+                    $result = $conn->query("SELECT * FROM products;");
+                    while ($row = $result->fetch_assoc()) {
+                        printf(
+                            '<div class="product-options" data-product="%s" product-id="%s"><img class="product-image" src="%s"><div><h3>%s</h3><p>%s</p><p class="price">From $%s</p></div>',
+                            $row['name'],
+                            $row['productid'],
+                            $row['image_link'],
+                            $row['name'],
+                            $row['description'],
+                            $row['price']
+                        );
+                    }
+                    $conn->close();
+                ?>
             </div>
 
             <div class="preview-container" id="previewContainer">
