@@ -162,21 +162,23 @@
         /* artwork display grid */
         .artwork-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+    justify-items: center;
         }
 
         .artwork-card {
-            background: white;
-            border: 1px solid rgba(0,0,0,0.1);
-            overflow: hidden;
-            cursor: pointer;
-            transition: var(--transition);
+            width: 100%;
+    max-width: 300px;
+      border: 1px solid #e0e0e0;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
         }
 
         .artwork-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--card-shadow);
+            transform: scale(1.05);
         }
 
         .artwork-card.selected {
@@ -185,9 +187,8 @@
 
         .artwork-image {
             width: 100%;
-            height: 350px;
-            object-fit: cover;
-            transition: var(--transition);
+      height: 300px;
+      object-fit: cover;
         }
 
         .artwork-card:hover .artwork-image {
@@ -381,10 +382,13 @@
                 </div>
                 <div class="filter-container">
                     <button class="filter-btn" data-department="11">Paintings</button>
-                    <button class="filter-btn" data-department="5">Asian Art</button>
-                    <button class="filter-btn" data-department="21">Modern Art</button>
-                    <button class="filter-btn" data-department="6">European Art</button>
-                    <button class="filter-btn" data-department="10">Photography</button>
+                    <button class="filter-btn" data-department="6">Asian Art</button>
+                    <button class="filter-btn" data-department="19">Photography</button>
+                    <button class="filter-btn" data-department="12">European Art</button>
+                    <button class="filter-btn" data-department="18">Musical Instruments</button>
+                    <button class="filter-btn" data-department="13">Greek and Roman Art</button>
+                    <button class="filter-btn" data-department="14">Islamic Art</button>
+                    <button class="filter-btn" data-department="10">Egyptian Art</button>
                 </div>
             </div>
 
@@ -436,291 +440,194 @@
     </main>
 
     <script>
-        // the met API endpoint
-        const MET_API_BASE = 'https://collectionapi.metmuseum.org/public/collection/v1/';
+    const MET_API_BASE = 'https://collectionapi.metmuseum.org/public/collection/v1';
+    const artworkContainer = document.getElementById('artworkGrid');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    let selectedArtwork = null;
+    let selectedProduct = null;
 
-        // landing page selection
-        const FEATURED_ARTWORK_IDS = [
-            436535,  // water lilies, monet
-            459123,  // wheat field with cypresses, van gogh
-            438814,  // the death of socrates, jacques louis david
-            437853,  // washington crossing the delaware, emanuel leutze
-            436947,  // the persistence of memory, salvador dali
-            435882,  // madame x, john singer sargent 
-            437984,  // bridge over a pond of water lilies, monet
-            436529,  // the dance class, degas
-            437133,  // young woman with a water pitcher, vermeer
-            436965,  // self-portrait with a straw hat, van gogh
-            436944,  // the cards players, cezanne
-            459088   // irises, van gogh
-        ];
+    // Function to validate artwork
+    function isValidArtwork(artwork) {
+    return artwork.primaryImage && artwork.primaryImage.startsWith('http') && artwork.isPublicDomain;
+    }
 
-        // shuffle
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+    // Fetch and display artworks by department
+    async function fetchAndDisplayArtworks(departmentId) {
+        try {
+            artworkContainer.innerHTML = '<p>loading curated collection...</p>';
+            const response = await fetch(`${MET_API_BASE}/objects?departmentIds=${departmentId}`);
+            const data = await response.json();
+
+            if (!data.objectIDs || data.objectIDs.length === 0) {
+            artworkContainer.innerHTML = '<p>No artworks found for this department.</p>';
+            return;
             }
-            return array;
-        }
 
-        // fetch landing page selection 
-        async function fetchInitialArtworks() {
-            try {
-                const grid = document.getElementById('artworkGrid');
-                grid.innerHTML = '<div class="loading">loading curated collection...</div>';
+            // Shuffle and fetch details for a random subset of IDs
+            const shuffledIDs = data.objectIDs.sort(() => 0.5 - Math.random()).slice(0, 50);
+            const artworks = await Promise.all(shuffledIDs.map(fetchArtworkDetails));
+            const validArtworks = artworks.filter(isValidArtwork).slice(0, 20);
 
-                // shuffle and take 10
-                const selectedIds = shuffleArray([...FEATURED_ARTWORK_IDS]).slice(0, 10);
-                
-                // fetch data in parallel
-                const artworks = await Promise.all(
-                    selectedIds.map(id => fetchArtworkDetails(id))
-                );
-
-                const validArtworks = artworks.filter(artwork => artwork !== null);
-
-                if (validArtworks.length === 0) {
-                    grid.innerHTML = '<div class="error">unable to load curated collection. please try again.</div>';
-                    return;
-                }
-
-                renderArtworks(validArtworks);
-
-            } catch (error) {
-                console.error('error fetching curated artworks:', error);
-                document.getElementById('artworkGrid').innerHTML = 
-                    '<div class="error">error loading artworks. please try again.</div>';
+            if (validArtworks.length === 0) {
+            artworkContainer.innerHTML = '<p>unable to load curated collection. please try again.</p>';
+            return;
             }
+
+            renderArtworks(validArtworks);
+        } catch (error) {
+            console.error('error fetching artworks:', error);
+            artworkContainer.innerHTML = '<p>error loading artworks. please try again.</p>';
         }
+    }
 
-        // initalize with landing page selection 
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchInitialArtworks(); 
-            setupEventListeners();
-        });
-
-        let selectedArtwork = null;
-        let selectedProduct = null;
-
-        // valid date artwork data has image (necessary for print preview)
-        function isValidArtwork(artwork) {
-            return artwork 
-                && artwork.primaryImage  // has image
-                && artwork.primaryImage.startsWith('http')  // image URL is valid
-                && artwork.title  // has title
-                && artwork.objectID  // has ID
-                && artwork.isPublicDomain;  // has commercial use license 
+    // Function to fetch individual artwork details
+    async function fetchArtworkDetails(id) {
+        try {
+            const response = await fetch(`${MET_API_BASE}/objects/${id}`);
+            return await response.json();
+        } catch {
+            return null;
         }
+    }
 
-        // fetch an artwork data object 
-        async function fetchArtworkDetails(id) {
-            try {
-                const response = await fetch(`${MET_API_BASE}objects/${id}`);
-                const artwork = await response.json();
-                return isValidArtwork(artwork) ? artwork : null;
-            } catch (error) {
-                console.error(`Error fetching artwork ${id}:`, error);
-                return null;
-            }
-        }
-
-        // fetch random artworks from The Met API
-        async function fetchArtworks(departmentId = null) {
-            try {
-                // show loading state
-                const grid = document.getElementById('artworkGrid');
-                grid.innerHTML = '<div class="loading">Loading artwork collection</div>';
-
-                // build search query
-                let query = `${MET_API_BASE}search?hasImages=true&q=artwork`;
-                if (departmentId) {
-                    query += `&departmentIds=${departmentId}`;
-                }
-                
-                const searchResponse = await fetch(query);
-                const searchData = await searchResponse.json();
-                
-                if (!searchData.objectIDs || searchData.objectIDs.length === 0) {
-                    grid.innerHTML = '<div class="no-results">No artworks found in this category.</div>';
-                    return;
-                }
-
-                // shuffle and take more IDs than needed since some might be invalid
-                const selectedIds = searchData.objectIDs
-                    .sort(() => 0.5 - Math.random())
-                    .slice(0, 30); // start with 30 for a batch; change if needed 
-
-                // fetch and validate artwork details in parallel
-                const artworkPromises = selectedIds.map(id => fetchArtworkDetails(id));
-                const artworks = await Promise.all(artworkPromises);
-
-                // filter out null results and take first 9 valid artworks
-                const validArtworks = artworks
-                    .filter(artwork => artwork !== null)
-                    .slice(0, 9);
-
-                if (validArtworks.length === 0) {
-                    grid.innerHTML = '<div class="error">No suitable artworks found. Please try again.</div>';
-                    return;
-                }
-
-                renderArtworks(validArtworks);
-
-            } catch (error) {
-                console.error('Error fetching artworks:', error);
-                document.getElementById('artworkGrid').innerHTML = 
-                    '<div class="error">Error loading artworks. Please try again later.</div>';
-            }
-        }
-
-        // display artwork cards
-        function renderArtworks(artworks) {
-            const grid = document.getElementById('artworkGrid');
-            grid.innerHTML = artworks.map(artwork => `
-                <div class="artwork-card" data-id="${artwork.objectID}">
-                    <img src="${artwork.primaryImage}" 
-                         alt="${artwork.title}" 
-                         class="artwork-image"
-                         onerror="this.parentElement.style.display='none'">
-                    <div class="artwork-info">
-                        <h3>${artwork.title}</h3>
-                        <p>${artwork.artistDisplayName || 'Unknown Artist'}</p>
-                        <p class="date">${artwork.objectDate || artwork.period || ''}</p>
-                    </div>
+    // Function to render artworks in the grid
+    function renderArtworks(artworks) {
+        artworkContainer.innerHTML = '';
+        artworks.forEach(artwork => {
+            const artworkHTML = `
+            <div class="artwork-card">
+                <img src="${artwork.primaryImage}" alt="${artwork.title || 'Artwork'}" class="artwork-image">
+                <div class="artwork-info">
+                <h3>${artwork.title || 'Untitled'}</h3>
+                <p>By ${artwork.artistDisplayName || 'Unknown Artist'}</p>
+                <p class="date">${artwork.objectDate || 'Unknown Date'}</p>
                 </div>
-            `).join('');
-        }
-
-        // handle search with department filtering
-        async function handleSearch(searchTerm, department = null) {
-            try {
-                const grid = document.getElementById('artworkGrid');
-                grid.innerHTML = '<div class="loading">Searching artworks</div>';
-
-                let query = `${MET_API_BASE}search?hasImages=true&q=${encodeURIComponent(searchTerm)}`;
-                if (department) {
-                    query += `&departmentId=${department}`;
-                }
-                
-                const response = await fetch(query);
-                const data = await response.json();
-                
-                if (!data.objectIDs || data.objectIDs.length === 0) {
-                    grid.innerHTML = '<div class="no-results">No artworks found matching your search.</div>';
-                    return;
-                }
-
-                // get details for first 30 items  
-                const artworkPromises = data.objectIDs
-                    .slice(0, 30)
-                    .map(id => fetchArtworkDetails(id));
-
-                const artworks = await Promise.all(artworkPromises);
-                const validArtworks = artworks
-                    .filter(artwork => artwork !== null)
-                    .slice(0, 9);
-
-                if (validArtworks.length === 0) {
-                    grid.innerHTML = '<div class="no-results">No suitable artworks found matching your search.</div>';
-                    return;
-                }
-
-                renderArtworks(validArtworks);
-
-            } catch (error) {
-                console.error('Search error:', error);
-                grid.innerHTML = '<div class="error">Error performing search. Please try again.</div>';
-            }
-        }
-
-        // debounce for search
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-
-        // event listeners
-        function setupEventListeners() {
-            // artwork selection
-            document.getElementById('artworkGrid').addEventListener('click', (e) => {
-                const card = e.target.closest('.artwork-card');
-                if (card) {
-                    document.querySelectorAll('.artwork-card').forEach(c => {
-                        c.classList.remove('selected');
-                        c.style.transform = 'scale(1)';
-                    });
-                    card.classList.add('selected');
-                    card.style.transform = 'scale(1.02)';
-                    selectedArtwork = card.querySelector('img').src;
-                    updatePreview();
-                }
-            });
-
-            // product selection
-            document.querySelectorAll('.product-option').forEach(option => {
-                option.addEventListener('click', () => {
-                    document.querySelectorAll('.product-option').forEach(o => 
-                        o.classList.remove('selected'));
-                    option.classList.add('selected');
-                    selectedProduct = option.dataset.product;
-                    updatePreview();
-                });
-            });
-
-            // department filter buttons
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.filter-btn').forEach(b => 
-                        b.classList.remove('active'));
-                    btn.classList.add('active');
-                    fetchArtworks(btn.dataset.department);
-                });
-            });
-
-            // search with debouncing
-            const debouncedSearch = debounce((searchTerm) => {
-                const activeFilter = document.querySelector('.filter-btn.active');
-                handleSearch(searchTerm, activeFilter?.dataset.department);
-            }, 500);
-
-            document.querySelector('.search-input').addEventListener('input', (e) => {
-                const searchTerm = e.target.value.trim();
-                if (searchTerm.length >= 2) {
-                    debouncedSearch(searchTerm);
-                } else if (searchTerm.length === 0) {
-                    const activeFilter = document.querySelector('.filter-btn.active');
-                    fetchArtworks(activeFilter?.dataset.department);
-                }
-            });
-        }
-
-        // update preview
-        function updatePreview() {
-            const previewContainer = document.getElementById('previewContainer');
-            const addToCartBtn = document.getElementById('addToCartBtn');
-
-            if (selectedArtwork && selectedProduct) {
-                previewContainer.innerHTML = `
-                    <img src="${selectedArtwork}" alt="Preview" class="preview-image">
-                    <p>Preview of your ${selectedProduct} with selected artwork</p>
-                `;
-                addToCartBtn.disabled = false;
-            }
-        }
-
-        // initialize 
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchArtworks();
-            setupEventListeners();
+            </div>
+            `;
+            artworkContainer.innerHTML += artworkHTML;
         });
+    }
+
+    // handle search with department filtering
+    async function handleSearch(searchTerm, department = null) {
+        try {
+            artworkContainer.innerHTML = '<p>Searching artworks...</p>';
+
+            let query = `${MET_API_BASE}/search?hasImages=true&q=${encodeURIComponent(searchTerm)}`;
+            if (department) {
+                query += `&departmentId=${department}`;
+            }
+
+            const response = await fetch(query);
+            const data = await response.json();
+
+            if (!data.objectIDs || data.objectIDs.length === 0) {
+                artworkContainer.innerHTML = '<p>No artworks found matching your search.</p>';
+                return;
+            }
+
+            const artworks = await Promise.all(data.objectIDs.slice(0, 30).map(fetchArtworkDetails));
+            const validArtworks = artworks.filter(isValidArtwork).slice(0, 20);
+
+            if (validArtworks.length === 0) {
+                artworkContainer.innerHTML = '<p>No suitable artworks found.</p>';
+                return;
+            }
+
+            renderArtworks(validArtworks);
+        } catch (error) {
+            console.error('Search error:', error);
+            artworkContainer.innerHTML = '<p>Error performing search. Please try again later.</p>';
+        }
+    }
+
+    // debounce for search
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // event listeners
+    document.querySelector('.search-input').addEventListener('input', debounce((e) => {
+        const searchTerm = e.target.value.trim();
+        if (searchTerm.length >= 2) {
+            const activeFilter = document.querySelector('.filter-btn.active');
+            handleSearch(searchTerm, activeFilter?.dataset.department);
+        } else if (searchTerm.length === 0) {
+            const activeFilter = document.querySelector('.filter-btn.active');
+            fetchAndDisplayArtworks(activeFilter?.dataset.department);
+        }
+    }, 500));
+
+    filterButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        fetchAndDisplayArtworks(button.dataset.department);
+    });
+    });
+
+function setupEventListeners() {
+    // artwork selection
+    document.getElementById('artworkGrid').addEventListener('click', (e) => {
+        const card = e.target.closest('.artwork-card');
+        if (card) {
+            document.querySelectorAll('.artwork-card').forEach(c => {
+                c.classList.remove('selected');
+                c.style.transform = 'scale(1)';
+            });
+            card.classList.add('selected');
+            card.style.transform = 'scale(1.02)';
+            
+            // Directly get the artwork details from the current card
+            selectedArtwork = card.querySelector('img').src;
+            updatePreview();
+        }
+    });
+
+    // product selection
+    document.querySelectorAll('.product-option').forEach(option => {
+        option.addEventListener('click', () => {
+            document.querySelectorAll('.product-option').forEach(o => 
+                o.classList.remove('selected'));
+            option.classList.add('selected');
+            selectedProduct = option.dataset.product;
+            updatePreview();
+        });
+    });
+}
+
+    // Update preview function
+    function updatePreview() {
+        const previewContainer = document.getElementById('previewContainer');
+        const addToCartBtn = document.getElementById('addToCartBtn');
+
+        if (selectedArtwork && selectedProduct) {
+            previewContainer.innerHTML = `
+                <img src="${selectedArtwork}" alt="Preview" class="preview-image">
+                <p>Preview of your ${selectedProduct} with selected artwork</p>
+            `;
+            addToCartBtn.disabled = false;
+        } else {
+            previewContainer.innerHTML = '<p>Select an artwork and product to preview</p>';
+            addToCartBtn.disabled = true;
+        }
+    }
+
+    // Initialize 
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchAndDisplayArtworks(6);  // Default to Asian Art
+        setupEventListeners();
+    });
+
+    
     </script>
 </body>
 </html>
