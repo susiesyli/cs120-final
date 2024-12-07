@@ -9,7 +9,6 @@
         ?>
     </head>
     <body>
-        <div class="product-options">
         <?php
             $conn = new mysqli($server, $userid, $pw);
 
@@ -19,7 +18,7 @@
 
             while ($row = $result->fetch_assoc()) {
                 printf(
-                    '<div class="product-options" data-product="%s" product-id="%s"><img class="product-image" src="images/%s"><div><h3>%s</h3><p>%s</p><p class="price">From $%s</p></div>',
+                    '<div class="product-option" data-product="%s" product-id="%s"><img class="product-image" src="images/%s"><div><h3>%s</h3><p>%s</p><p class="price">From $%s</p></div></div>',
                     $row['name'],
                     $row['productid'],
                     $row['image_link'],
@@ -30,6 +29,5 @@
             }
             $conn->close();
         ?>
-        </div>
     </body>
 </html>
