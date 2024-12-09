@@ -1,14 +1,14 @@
 # cs120-final
 
 ## To launch website: 
-[website](https://susiesyli.github.io/cs120-final/index.html)
+[website](https://lukew.sgedu.site/final/index.html)
 
 ## Project requirements 
-- [ ]  Use HTML/CSS/Javascript and optionally jQuery
-- [ ]  Must use a database(SQL or NoSQL)
-- [ ]  Must use a server-side technology - you may use PHP or  Node.js (or both!)
+- [x ]  Use HTML/CSS/Javascript and optionally jQuery
+- [ x]  Must use a database(SQL or NoSQL)
+- [x ]  Must use a server-side technology - you may use PHP or  Node.js (or both!)
 - [x]  Must use an external API
-- [ ]  Must be interactive and transactional  – it must do something useful
+- [x ]  Must be interactive and transactional  – it must do something useful
 
 
 ## VC pitch 
